@@ -1,0 +1,22 @@
+{% extends "shop/base.html" %}
+{% block title %}Login — LuxDrive{% endblock %}
+
+{% block content %}
+<div class="container" style="max-width:480px; margin-top:24px;">
+  <h1>Iniciar sesión</h1>
+
+  {% if form.errors %}
+    <div class="messages"><div class="message">Usuario o contraseña incorrectos. Inténtalo de nuevo.</div></div>
+  {% endif %}
+
+  <form method="post" class="form panel" novalidate>
+    {% csrf_token %}
+    <label>Usuario o email {{ form.username }}</label>
+    <label>Contraseña {{ form.password }}</label>
+    {% if next %}<input type="hidden" name="next" value="{{ next }}">{% endif %}
+    <button class="btn" type="submit">Entrar</button>
+  </form>
+
+
+</div>
+{% endblock %}

@@ -1,0 +1,117 @@
+{% extends "shop/base.html" %}
+{% load currency_tags %}
+{% block title %}Administración — Carros{% endblock %}
+{% block content %}
+
+<section class="hero admin-hero">
+  <div class="container">
+    <div class="hero-top">
+      <div>
+        <h1 class="hero-title">Inventario — Panel de administración</h1>
+        <p class="hero-sub">Administra el inventario de carros: crea, edita o elimina vehículos. También puedes gestionar usuarios desde la sección correspondiente.</p>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn-outline" href="{% url 'admin_car_create' %}">+ Nuevo carro</a>
+        <a class="btn btn-outline" href="{% url 'admin_users' %}">Administrar usuarios</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+  {% if messages %}
+    <div class="messages container">{% for m in messages %}<div class="message">{{ m }}</div>{% endfor %}</div>
+  {% endif %}
+
+  <div class="container mt-3">
+    <div style="display:grid;grid-template-columns:260px 1fr;gap:18px">
+      <!-- Left column: parameter filters -->
+      <div>
+        <div class="panel">
+          <h3>Filtros</h3>
+          <form method="get" id="paramFilters">
+            {% if filter_form %}
+              <div style="margin-bottom:8px">{{ filter_form.brand.label_tag }}{{ filter_form.brand }}</div>
+              <div style="margin-bottom:8px">{{ filter_form.color.label_tag }}{{ filter_form.color }}</div>
+              <div style="display:flex;gap:8px;margin-bottom:8px">{{ filter_form.year_min }} {{ filter_form.year_max }}</div>
+              <div style="display:flex;gap:8px;margin-bottom:8px">{{ filter_form.price_min }} {{ filter_form.price_max }}</div>
+            {% endif %}
+            <div style="display:flex;gap:8px;margin-top:6px">
+              <button class="btn" type="submit">Aplicar</button>
+              <a class="btn btn-outline" href="{% url 'admin_cars' %}">Limpiar</a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Right column: search + table -->
+      <div>
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px">
+          <div style="flex:1;margin-right:12px"><input type="search" id="admin-search" class="input" placeholder="Buscar marca o modelo..." value="{{ request.GET.q|default_if_none:'' }}"></div>
+          <div><a class="btn btn-outline" href="{% url 'admin_car_create' %}">+ Nuevo carro</a></div>
+        </div>
+
+        <div class="panel">
+          <table class="table">
+      <thead>
+        <tr>
+          <th>Imagen</th><th>Marca/Modelo</th><th>Año</th><th>Tipo</th><th>Transmisión</th><th>Kilometraje</th><th>Precio (COP)</th><th>Publicado</th><th></th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for c in page.object_list %}
+        <tr>
+          <td>{% if c.image %}<img src="{{ c.image.url }}" alt="{{ c }}" style="width:100px;border-radius:8px">{% else %}—{% endif %}</td>
+          <td><strong>{{ c.brand }}</strong> {{ c.model }}</td>
+          <td>{{ c.year }}</td>
+          <td>{{ c.get_body_type_display }}</td>
+          <td>{{ c.get_transmission_display }}</td>
+          <td>{{ c.mileage_km }} km</td>
+          <td>${{ c.price_cop|format_cop }}</td>
+          <td>{{ c.is_active|yesno:"Sí,No" }}</td>
+          <td class="flex gap-2">
+            <a class="btn btn-outline" href="{% url 'admin_car_edit' c.pk %}">Editar</a>
+            <form action="{% url 'admin_car_delete' c.pk %}" method="post" style="display:inline">{% csrf_token %}
+              <button class="btn btn-ghost" onclick="return confirm('Eliminar este carro?')">Eliminar</button>
+            </form>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="8" class="center">No hay carros cargados.</td></tr>
+      {% endfor %}
+      </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+  (function(){
+    const input = document.getElementById('admin-search');
+    const tbody = document.querySelector('.panel table tbody');
+    let t = null;
+    function fetchRows(q){
+      const params = new URLSearchParams(location.search);
+      if (q !== undefined) params.set('q', q); else q = params.get('q')||'';
+      params.set('ajax','1');
+      fetch(location.pathname + '?' + params.toString())
+        .then(r=> r.text()).then(html => { tbody.innerHTML = html; });
+    }
+    if (!input) return;
+    input.addEventListener('input', (e)=>{
+      const q = e.target.value.trim();
+      if (t) clearTimeout(t);
+      t = setTimeout(()=>{ fetchRows(q); }, 250);
+    });
+  })();
+  </script>
+
+  {% if page.paginator.num_pages > 1 %}
+    <div class="mt-2 center">
+      {% if page.has_previous %}<a class="btn btn-outline" href="?page={{ page.previous_page_number }}">« Anterior</a>{% endif %}
+      <span class="mt-1">Página {{ page.number }} de {{ page.paginator.num_pages }}</span>
+      {% if page.has_next %}<a class="btn btn-outline" href="?page={{ page.next_page_number }}">Siguiente »</a>{% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

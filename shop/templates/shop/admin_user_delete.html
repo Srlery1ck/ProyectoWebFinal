@@ -1,0 +1,14 @@
+{% extends "shop/base.html" %}
+{% block title %}Eliminar usuario{% endblock %}
+{% block content %}
+<div class="container mt-3">
+  <h1 class="hero-title">Eliminar usuario</h1>
+  <div class="panel">
+    <p>¿Eliminar usuario <strong>{{ user.username }}</strong>?</p>
+    <form method="post">{% csrf_token %}
+      <button class="btn" type="submit">Confirmar eliminación</button>
+      <a class="btn btn-outline" href="{% url 'admin_users' %}">Cancelar</a>
+    </form>
+  </div>
+</div>
+{% endblock %}

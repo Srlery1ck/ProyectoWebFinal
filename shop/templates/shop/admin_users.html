@@ -1,0 +1,59 @@
+{% extends "shop/base.html" %}
+{% block title %}Administración — Usuarios{% endblock %}
+{% block content %}
+
+<section class="hero admin-hero">
+  <div class="container">
+    <div class="hero-top">
+      <div>
+        <h1 class="hero-title">Usuarios</h1>
+        <p class="hero-sub">Lista de usuarios registrados. Crea, edita o elimina cuentas desde aquí.</p>
+      </div>
+      <div class="hero-actions">
+        <a class="btn btn-outline" href="{% url 'admin_user_create' %}">+ Nuevo usuario</a>
+        <a class="btn btn-outline" href="{% url 'admin_cars' %}">Administrar productos</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+  {% if messages %}
+    <div class="messages container">{% for m in messages %}<div class="message">{{ m }}</div>{% endfor %}</div>
+  {% endif %}
+
+  <div class="container mt-3">
+  <div class="panel">
+    <table class="table">
+      <thead>
+        <tr><th>Usuario</th><th>Email</th><th>Staff</th><th>Activo</th><th></th></tr>
+      </thead>
+      <tbody>
+      {% for u in page.object_list %}
+        <tr>
+          <td>{{ u.username }}</td>
+          <td>{{ u.email }}</td>
+          <td>{{ u.is_staff|yesno:"Sí,No" }}</td>
+          <td>{{ u.is_active|yesno:"Sí,No" }}</td>
+          <td class="flex gap-2">
+            <a class="btn btn-outline" href="{% url 'admin_user_edit' u.pk %}">Editar</a>
+            <form action="{% url 'admin_user_delete' u.pk %}" method="post" style="display:inline">{% csrf_token %}
+              <button class="btn btn-ghost" onclick="return confirm('Eliminar este usuario?')">Eliminar</button>
+            </form>
+          </td>
+        </tr>
+      {% empty %}
+        <tr><td colspan="5" class="center">No hay usuarios.</td></tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {% if page.paginator.num_pages > 1 %}
+    <div class="mt-2 center">
+      {% if page.has_previous %}<a class="btn btn-outline" href="?page={{ page.previous_page_number }}">« Anterior</a>{% endif %}
+      <span class="mt-1">Página {{ page.number }} de {{ page.paginator.num_pages }}</span>
+      {% if page.has_next %}<a class="btn btn-outline" href="?page={{ page.next_page_number }}">Siguiente »</a>{% endif %}
+    </div>
+  {% endif %}
+</div>
+{% endblock %}

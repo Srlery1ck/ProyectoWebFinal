@@ -1,0 +1,43 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+{% load currency_tags %}
+{% block content %}
+
+<section class="container mt-3">
+  <div class="panel" style="display:flex;gap:20px;align-items:flex-start;flex-wrap:wrap">
+    <div style="flex:1 1 420px; min-width:300px">
+      {% if car.image %}
+        <img src="{{ car.image.url }}" alt="{{ car }}" style="width:100%; border-radius:12px; height:auto; object-fit:contain;">
+      {% else %}
+        <div style="height:360px;display:flex;align-items:center;justify-content:center;color:var(--muted);border-radius:12px">Sin imagen</div>
+      {% endif %}
+    </div>
+
+    <div style="flex:1 1 360px; min-width:280px">
+      <h1 style="margin:0 0 8px">{{ car.brand }} {{ car.model }}</h1>
+      <div style="color:var(--muted);margin-bottom:12px">Publicado: {{ car.created_at|date:"d M Y" }}</div>
+      <div style="display:flex;align-items:center;gap:14px;margin-bottom:18px">
+        <div class="price" style="font-size:28px">${{ car.price_cop|format_cop }}</div>
+        <div class="badge">{{ car.get_transmission_display }}</div>
+        <div class="badge">{{ car.get_body_type_display }}</div>
+      </div>
+
+      <div style="display:flex;gap:12px">
+        <a class="btn" href="#">Contactar vendedor</a>
+        <a class="btn btn-outline" href="{% url 'catalogo' %}">Volver al catálogo</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="panel mt-3">
+    <h3 style="margin:0 0 8px">Características</h3>
+    <ul style="margin:0;padding-left:18px;color:var(--muted)">
+      <li><strong>Año:</strong> {{ car.year }}</li>
+      <li><strong>Kilometraje:</strong> {{ car.mileage_km }} km</li>
+      <li><strong>Color:</strong> {{ car.color }}</li>
+      <li><strong>Transmisión:</strong> {{ car.get_transmission_display }}</li>
+    </ul>
+  </div>
+</section>
+
+{% endblock %}

@@ -1,0 +1,18 @@
+{% extends "shop/base.html" %}
+{% block title %}Administración — Usuarios{% endblock %}
+{% block content %}
+<div class="container mt-3">
+  <h1 class="hero-title">{{ title }}</h1>
+  <div class="panel">
+    <form method="post">{% csrf_token %}
+      <div class="form-grid">
+        {{ form.as_p }}
+      </div>
+      <div class="mt-2">
+        <button class="btn" type="submit">Guardar</button>
+        <a class="btn btn-outline" href="{% url 'admin_users' %}">Cancelar</a>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}

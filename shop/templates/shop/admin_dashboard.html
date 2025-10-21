@@ -1,0 +1,21 @@
+{% extends "shop/base.html" %}
+{% block title %}Administración — Panel{% endblock %}
+{% block content %}
+
+<section class="hero admin-hero">
+  <div class="container">
+    <div class="hero-top">
+      <div>
+        <h1 class="hero-title">Panel de administración</h1>
+        <p class="hero-sub">Accede rápidamente a las secciones principales: productos y usuarios.</p>
+      </div>
+      <div class="hero-actions">
+          <a class="btn btn-outline" href="{% url 'admin_cars' %}">Administrar productos</a>
+          <a class="btn btn-outline" href="{% url 'admin_users' %}">Administrar usuarios</a>
+        </div>
+    </div>
+  </div>
+</section>
+
+<!-- cards removed to avoid duplicate actions (hero already contains the links) -->
+{% endblock %}

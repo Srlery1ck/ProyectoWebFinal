@@ -1,0 +1,30 @@
+{% load static %}
+{% load currency_tags %}
+{% if cars %}
+    {% for car in cars %}
+    <article class="product">
+        <div class="thumb">
+            {% if car.image %}
+                <img src="{{ car.image.url }}" alt="{{ car }}">
+            {% else %}
+                <div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted)">Sin imagen</div>
+            {% endif %}
+        </div>
+        <div style="padding:12px">
+            <div class="title">{{ car.brand }} {{ car.model }}</div>
+            <div class="desc">{{ car.year }} · {{ car.mileage_km }} km</div>
+            <div class="meta">
+                <div class="price">${{ car.price_cop|format_cop }}</div>
+                <a class="btn btn-outline" href="{% url 'car_detail' car.pk %}">Ver</a>
+            </div>
+            {% if car.image %}
+                <div class="mt-1" style="font-size:12px;color:var(--muted)">
+                    <a href="{{ car.image }}" target="_blank">{{ car.image }}</a>
+                </div>
+            {% endif %}
+        </div>
+    </article>
+    {% endfor %}
+{% else %}
+    <p>No hay carros disponibles.</p>
+{% endif %}

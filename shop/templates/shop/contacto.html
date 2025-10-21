@@ -1,0 +1,42 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+{% block content %}
+
+<section class="container mt-3">
+	<h1 class="hero-title">Contacto</h1>
+	<p class="hero-sub">Ponte en contacto con nosotros. Responderemos en breve.</p>
+
+	<div class="panel mt-3" style="max-width:720px; margin:auto; text-align:left">
+		<h3 style="margin-top:0">Información de contacto</h3>
+		<p style="color:var(--muted)">Puedes escribirnos o enviarnos un mensaje por WhatsApp.</p>
+
+		<div style="display:flex;flex-direction:column;gap:12px;margin-top:12px">
+			<div style="display:flex;align-items:center;gap:12px">
+				<div class="badge">✉️</div>
+				<div>
+					<div style="font-weight:700">Correo</div>
+					<div style="color:var(--muted)"><a href="mailto:contacto@luxdrive.ejemplo">contacto@luxdrive.ejemplo</a></div>
+				</div>
+			</div>
+
+			<div style="display:flex;align-items:center;gap:12px">
+				<div class="badge">📱</div>
+				<div>
+					<div style="font-weight:700">WhatsApp</div>
+					<div style="color:var(--muted)"><a href="https://wa.me/5731531315453">+5731531315453</a></div>
+				</div>
+			</div>
+
+			<div style="display:flex;align-items:center;gap:12px">
+				<div class="badge">☎️</div>
+				<div>
+					<div style="font-weight:700">Teléfono</div>
+					<div style="color:var(--muted)">+57 31531315453</div>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</section>
+
+{% endblock %}

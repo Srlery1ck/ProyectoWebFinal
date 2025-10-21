@@ -1,0 +1,114 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+{% load currency_tags %}
+{% block content %}
+
+<section class="hero">
+	<div class="carousel" id="homeCarousel">
+		{% if carousel_images %}
+			{% for img in carousel_images %}
+				<div class="carousel-item{% if forloop.first %} active{% endif %}">
+					<img src="{{ img }}" alt="Slide {{ forloop.counter }}">
+				</div>
+			{% endfor %}
+		{% else %}
+			<div class="carousel-item active">
+				<div class="no-image">No hay imágenes en <code>media/Home</code></div>
+			</div>
+		{% endif %}
+
+		<button class="carousel-prev" aria-label="Anterior">‹</button>
+		<button class="carousel-next" aria-label="Siguiente">›</button>
+</div>
+
+<div class="hero-copy container">
+	<h1>Lux Drive</h1>
+	<p class="lead">Buscamos el lujo y el confort a través de autos de alta gama. Seleccionamos manualmente cada vehículo para ofrecer una experiencia exclusiva a nuestros clientes.</p>
+	<a href="{% url 'catalogo' %}" class="btn">Catálogo</a>
+</div>
+</section>
+
+<section class="featured container">
+	<h2>Vehículo destacado</h2>
+	{% if featured_car %}
+		<div id="featuredCard">
+			<article class="product">
+				<div class="thumb">
+					{% if featured_car.image %}
+						<img src="{{ featured_car.image.url }}" alt="{{ featured_car }}">
+					{% else %}
+						<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted)">Sin imagen</div>
+					{% endif %}
+				</div>
+				<div style="padding:12px">
+					<div class="title">{{ featured_car.brand }} {{ featured_car.model }}</div>
+					<div class="desc">{{ featured_car.year }} · {{ featured_car.mileage_km }} km</div>
+					<div class="meta">
+						<div class="price">${{ featured_car.price_cop|format_cop }}</div>
+						<a class="btn btn-outline" href="{% url 'car_detail' featured_car.pk %}">Ver ficha</a>
+					</div>
+				</div>
+			</article>
+		</div>
+	{% else %}
+		<p>No hay vehículos disponibles.</p>
+	{% endif %}
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Carrusel robusto que evita saltos de layout
+;(function(){
+	const carousel = document.getElementById('homeCarousel');
+	if (!carousel) return;
+	const items = Array.from(carousel.querySelectorAll('.carousel-item'));
+	let index = items.findIndex(it => it.classList.contains('active')) || 0;
+
+	const setHeightToActive = () => {
+		const active = items[index];
+		if (!active) return;
+		const img = active.querySelector('img');
+		if (!img) return carousel.style.height = '';
+		const h = img.naturalHeight && img.naturalWidth ? Math.round(carousel.clientWidth * (img.naturalHeight / img.naturalWidth)) : img.clientHeight || 300;
+		carousel.style.height = h + 'px';
+	};
+
+	function show(i){
+		items.forEach((it, n)=> it.classList.toggle('active', n===i));
+		setTimeout(setHeightToActive, 60); // pequeña espera para que la imagen se estabilice
+	}
+	function next(){ index = (index+1) % items.length; show(index); }
+	function prev(){ index = (index-1+items.length) % items.length; show(index); }
+
+	const nextBtn = carousel.querySelector('.carousel-next');
+	const prevBtn = carousel.querySelector('.carousel-prev');
+	if (nextBtn) nextBtn.addEventListener('click', ()=>{ next(); resetTimer(); });
+	if (prevBtn) prevBtn.addEventListener('click', ()=>{ prev(); resetTimer(); });
+
+	// Cuando las imágenes carguen, asegurarse de que la altura del carrusel sea correcta
+	items.forEach(it => {
+		const img = it.querySelector('img');
+		if (img) {
+			if (!img.complete) img.addEventListener('load', setHeightToActive);
+			// en caso de imagen cacheada
+			img.addEventListener('error', () => {});
+		}
+	});
+
+	// manejar cambio de tamaño de la ventana
+	let resizeTimer = null;
+	window.addEventListener('resize', ()=>{ if (resizeTimer) clearTimeout(resizeTimer); resizeTimer = setTimeout(setHeightToActive, 120); });
+
+	// auto-reproducción
+	let timer = setInterval(next, 4500);
+	function resetTimer(){ clearInterval(timer); timer = setInterval(next, 4500); }
+
+	// medición inicial
+	setHeightToActive();
+})();
+
+// Botón Catálogo: desplaza a la sección de catálogo y muestra el vehículo destacado como 'grande' (scroll)
+</script>
+{% endblock %}

@@ -1,0 +1,142 @@
+{% extends 'shop/base.html' %}
+{% load static %}
+{% load currency_tags %}
+{% block content %}
+
+<section class="container mt-3">
+	<h1 class="hero-title">Catálogo</h1>
+		<p class="hero-sub">Explora nuestros carros disponibles. Haz click en un producto para ver más detalles.</p>
+
+		<div style="display:grid; grid-template-columns:260px 1fr; gap:18px; align-items:start">
+			<!-- Left: parameter filters -->
+			<aside>
+				<div class="panel">
+					<h3 style="margin-top:0">Filtros</h3>
+					<form method="get">
+						<div style="margin-bottom:8px">{{ filter_form.brand.label_tag }}{{ filter_form.brand }}</div>
+						<div style="margin-bottom:8px">{{ filter_form.color.label_tag }}{{ filter_form.color }}</div>
+						<div style="display:flex;gap:8px;margin-bottom:8px">{{ filter_form.year_min }} {{ filter_form.year_max }}</div>
+						<div style="display:flex;gap:8px;margin-bottom:8px">{{ filter_form.price_min }} {{ filter_form.price_max }}</div>
+						<div style="display:flex;gap:8px;margin-top:6px"><button class="btn" type="submit">Filtrar</button> <a class="btn btn-outline" href="{% url 'catalogo' %}">Limpiar</a></div>
+					</form>
+				</div>
+			</aside>
+
+			<!-- Right: search + results -->
+			<div>
+				<div style="margin-bottom:12px">
+					<input id="catalog-search" type="search" placeholder="Buscar marca o modelo..." class="input" style="width:100%">
+					<div id="suggestions" style="position:relative; margin-bottom:24px;"></div>
+					<div id="live-results" style="margin-top:8px; margin-bottom:16px;"></div>
+				</div>
+
+				<div class="products mt-5">
+		{% for car in page.object_list %}
+			<article class="product">
+				<div class="thumb">
+					{% if car.image %}
+						<img src="{{ car.image.url }}" alt="{{ car }}">
+					{% else %}
+						<div style="display:flex;align-items:center;justify-content:center;height:100%;color:var(--muted)">Sin imagen</div>
+					{% endif %}
+				</div>
+						<div style="padding:12px">
+					<div class="title">{{ car.brand }} {{ car.model }}</div>
+					<div class="desc">{{ car.year }} · {{ car.mileage_km }} km</div>
+								<div class="meta">
+									<div class="price">${{ car.price_cop|format_cop }}</div>
+									<a class="btn btn-outline" href="{% url 'car_detail' car.pk %}">Ver</a>
+					</div>
+							{% if car.image %}
+								<div class="mt-1" style="font-size:12px;color:var(--muted)">
+									<a href="{{ car.image.url }}" target="_blank">{{ car.image.url }}</a>
+								</div>
+							{% endif %}
+				</div>
+			</article>
+		{% empty %}
+			<p>No hay carros disponibles.</p>
+		{% endfor %}
+		</div>
+	</div>
+
+	{% if page.paginator.num_pages > 1 %}
+		<div class="mt-2 center">
+				{% with request.GET.urlencode as qparams %}
+					{% if page.has_previous %}
+						<a class="btn btn-outline" href="?{% if qparams %}{{ qparams }}&{% endif %}page={{ page.previous_page_number }}">« Anterior</a>
+					{% endif %}
+					<span class="mt-1">Página {{ page.number }} de {{ page.paginator.num_pages }}</span>
+					{% if page.has_next %}
+						<a class="btn btn-outline" href="?{% if qparams %}{{ qparams }}&{% endif %}page={{ page.next_page_number }}">Siguiente »</a>
+					{% endif %}
+				{% endwith %}
+		</div>
+	{% endif %}
+
+</section>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+(() => {
+	const input = document.getElementById('catalog-search');
+	const box = document.getElementById('suggestions');
+	const products = document.querySelector('.products');
+	if (!products) return;
+	const originalHTML = products.innerHTML;
+	let timeout = null;
+
+	const live = document.getElementById('live-results');
+	function showSuggestions(list){
+		if(!list || !list.length){ box.innerHTML=''; live.innerHTML=''; return; }
+		// pequeño desplegable para sugerencias de texto
+		box.innerHTML = '<div style="position:absolute;z-index:60;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:6px;width:100%">' +
+			list.map(item=>`<div class="suggest-item" style="padding:8px;border-bottom:1px solid rgba(255,255,255,.03);cursor:pointer">${item.label}</div>`).join('') + '</div>';
+		Array.from(box.querySelectorAll('.suggest-item')).forEach((el, i)=>{
+			el.addEventListener('click', ()=>{ window.location = '/car/' + list[i].pk + '/'; });
+		})
+
+		// mostrar resultados compactos en vivo debajo del input de búsqueda
+		live.innerHTML = '<div style="display:flex;gap:8px;flex-wrap:wrap">' +
+			list.map(item=>{
+				const img = item.image ? `<img src="${item.image}" style="width:84px;height:56px;object-fit:cover;border-radius:6px;margin-right:8px">` : `<div style="width:84px;height:56px;background:var(--muted);border-radius:6px;margin-right:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px">No img</div>`;
+				return `<a class="live-item" href="/car/${item.pk}/" style="display:flex;align-items:center;padding:8px;background:var(--panel);border:1px solid var(--border);border-radius:8px;text-decoration:none;color:inherit;min-width:220px">${img}<div style="font-size:14px"><div style="font-weight:600">${item.label}</div><div style="font-size:12px;color:var(--muted)">${item.mileage_km} km · ${item.year} · ${item.price ? '$' + item.price : ''}</div></div></a>`
+			}).join('') + '</div>';
+	}
+
+	input.addEventListener('input', (e) => {
+		const q = e.target.value.trim();
+		if (timeout) clearTimeout(timeout);
+		if (!q) {
+			box.innerHTML='';
+			live.innerHTML='';
+			products.style.display = '';
+			products.innerHTML = originalHTML;
+			return;
+		}
+		timeout = setTimeout(()=>{
+			// obtener sugerencias (etiquetas) y actualizar el desplegable
+			fetch(`{% url 'search_suggestions' %}?q=` + encodeURIComponent(q))
+				.then(r=>r.json()).then(data=>{ showSuggestions(data); }).catch(()=>{box.innerHTML='';});
+				// obtener resultados renderizados (HTML) y reemplazar la cuadrícula principal; ocultar resultados en vivo
+			fetch(`{% url 'search_results' %}?q=` + encodeURIComponent(q))
+				.then(r=>{
+					if(!r.ok) throw new Error('bad');
+					return r.text();
+				}).then(html=>{
+					products.style.display = '';
+					products.innerHTML = html;
+					live.innerHTML = '';
+				}).catch(()=>{
+						// en caso de error, restaurar el original
+					products.style.display = '';
+					live.innerHTML = '';
+					products.innerHTML = originalHTML;
+				});
+		}, 200);
+	})
+})();
+</script>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% load currency_tags %}
+{% for c in page.object_list %}
+  <tr>
+    <td>{% if c.image %}<img src="{{ c.image.url }}" alt="{{ c }}" style="width:100px;border-radius:8px">{% else %}—{% endif %}</td>
+    <td><strong>{{ c.brand }}</strong> {{ c.model }}</td>
+    <td>{{ c.year }}</td>
+    <td>{{ c.get_body_type_display }}</td>
+    <td>{{ c.get_transmission_display }}</td>
+    <td>{{ c.mileage_km }} km</td>
+    <td>${{ c.price_cop|format_cop }}</td>
+    <td>{{ c.is_active|yesno:"Sí,No" }}</td>
+    <td class="flex gap-2">
+      <a class="btn btn-outline" href="{% url 'admin_car_edit' c.pk %}">Editar</a>
+      <form action="{% url 'admin_car_delete' c.pk %}" method="post" style="display:inline">{% csrf_token %}
+        <button class="btn btn-ghost" onclick="return confirm('Eliminar este carro?')">Eliminar</button>
+      </form>
+    </td>
+  </tr>
+{% empty %}
+  <tr><td colspan="8" class="center">No hay carros cargados.</td></tr>
+{% endfor %}
