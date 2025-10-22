@@ -8,7 +8,7 @@ TRANSMISSION_CHOICES = (
 
 BODY_TYPE_CHOICES = (
     ("SD", "Sedán"),
-    ("CN", "Camineta"),
+    ("CN", "Camioneta"),
 )
 
 class Car(models.Model):

@@ -85,7 +85,7 @@ class CarFilterForm(forms.Form):
     Los campos de precio se introducen como texto para aceptar separadores locales
     y se parsean en `_parse_price`.
     """
-    brand = forms.CharField(required=False, widget=forms.TextInput(attrs={"class": "input", "placeholder": "Marca"}))
+    brand = forms.CharField(label="Marca", required=False, widget=forms.TextInput(attrs={"class": "input", "placeholder": "Marca"}))
     color = forms.CharField(required=False, widget=forms.TextInput(attrs={"class": "input", "placeholder": "Color"}))
     year_min = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={"class": "input", "placeholder": "Año desde"}))
     year_max = forms.IntegerField(required=False, widget=forms.NumberInput(attrs={"class": "input", "placeholder": "Año hasta"}))
